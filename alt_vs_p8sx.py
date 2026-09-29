@@ -4,7 +4,7 @@ Images posted before the AI era (Telegram date in the file name < 2022-08-01) ar
 is a false positive. Newer posts are a mix; their flag rate is a rough proxy for hit rate. The old decision rule
 (3 models majority -> candidates -> 7 models with veto) is replayed exactly from imagesort.py.
 
-    python alt_vs_p8sx.py [--ordner "//NAS/.../Sorted Stuff"]
+    python alt_vs_p8sx.py --ordner "<scanned folder>"
 """
 import argparse
 import collections

@@ -4,7 +4,7 @@ Images are normalized as in production (norm.normiere: 512 px, JPEG q95 4:4:4; s
 imagesort does). Saves daten/ordner_<name>.npz with X (float16, siglip_mid), pfade, groesse (longer side).
 Read-only on the folder; resumable is not needed (one pass).
 
-    python ordner_merkmale.py "//NAS/.../Sorted Stuff" --name sorted
+    python ordner_merkmale.py "<folder>" --name sorted
 """
 import argparse
 import io

@@ -6,7 +6,7 @@ screencap-look, and the rest = genuine false positives on art. Duplicates (same 
 Human = Telegram post date in the file name before 2022-08-01 (era alibi). Scores come from the production cache
 (features.db, key sig2:p8sx_v1), i.e. the folder must have been scanned by imagesort ai-cleanup.
 
-    python fp_kategorien.py [--ordner "//NAS/.../Sorted Stuff"] [--schwelle 0.5]
+    python fp_kategorien.py --ordner "<scanned folder>" [--schwelle 0.5]
 """
 import argparse
 import collections

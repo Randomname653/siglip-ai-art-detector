@@ -3,7 +3,7 @@
 # through four generator VAEs (SD1, SDXL, Flux, Qwen) become extra AI examples next to their untouched originals.
 # Also a variant with hard-negative weighting (p10h) on the p8s data only, for comparison.
 # Compared with p8sx on: channels at equal FA (gleich_fa), all human test groups + FA curve (fa_kurve),
-# the owner's own folder "Sorted Stuff" (ordner_bewerten), robustness matrix.
+# a real collection of the owner (ordner_bewerten), robustness matrix.
 cd "$(dirname "$0")/.." || exit 1
 L=${DETEKTOR_DATEN:-daten}
 PY=${PY:-python}
