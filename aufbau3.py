@@ -48,6 +48,9 @@ QUELLEN_P3 = {"diffusiondb": f"{DATASETS}/diffusiondb/manifest.jsonl"}
 QUELLEN_P4 = {"midjourney_felix": f"{DATASETS}/midjourney_felix/manifest.jsonl",
               "nijijourney_p1atdev": f"{DATASETS}/nijijourney_p1atdev/manifest.jsonl"}
 QUELLEN_P5 = {"midjourney_v6_scrape": f"{DATASETS}/midjourney_v6_scrape/manifest.jsonl"}
+# Phase 6 (Fehlalarm-Recherche 29.09.): menschliche Trainingsbilder durch Generator-VAEs (vae_rekon.py) -> KI.
+# Split vom menschlichen Quellbild geerbt, damit Original und Rekonstruktion nie ueber Splits verteilt sind.
+QUELLEN_P6 = {"vae_rekon": f"{DATASETS}/vae_rekon/manifest.jsonl"}
 
 
 def split_von(quelle, user):
@@ -99,6 +102,11 @@ def zeilen_lesen(quellen=None):
                                    split=split_von(q, e.get("user")), grp=f"{q}:{e.get('user')}", src=e["datei"],
                                    quelle=q, hoch=False, nsfw=e.get("rating"), tags=e.get("tags", [])))
                 continue
+            if q == "vae_rekon":
+                zeilen.append(dict(wh_id="", model=f"VAE {e['vae']}", label=1, split=e["split"], grp=e["grp"],
+                                   src=e["datei"], quelle=q, hoch=False, nsfw=e.get("rating"), tags=[],
+                                   ki_modell=e["vae"], src_original=e.get("src_original", "")))
+                continue
             if q == "danbooru_train":
                 k = e.get("artist") or f"unbekannt:{e['id']}"
                 zeilen.append(dict(wh_id="", model="mensch", label=0,
@@ -125,12 +133,13 @@ def main():
     ap.add_argument("--p3", action="store_true", help="Phase-3-Quelle diffusiondb")
     ap.add_argument("--p4", action="store_true", help="Phase-4-Quellen Midjourney Felix + Niji p1atdev")
     ap.add_argument("--p5", action="store_true", help="Phase-5-Quelle Midjourney-v6-Stichprobe")
+    ap.add_argument("--p6", action="store_true", help="Phase-6-Quelle VAE-Rekonstruktionen menschlicher Bilder")
     ap.add_argument("--ohne", default="", help="Packs (mit Komma), deren Bilder schon gepackt sind — "
                                                "fuer kleine Aufstockungs-Packs")
     args = ap.parse_args()
 
     auswahl = (QUELLEN_MENSCH if args.mensch else QUELLEN_P2 if args.p2 else QUELLEN_P3 if args.p3
-               else QUELLEN_P4 if args.p4 else QUELLEN_P5 if args.p5 else QUELLEN)
+               else QUELLEN_P4 if args.p4 else QUELLEN_P5 if args.p5 else QUELLEN_P6 if args.p6 else QUELLEN)
     zeilen = zeilen_lesen(auswahl)
     if args.ohne:
         schon = set()

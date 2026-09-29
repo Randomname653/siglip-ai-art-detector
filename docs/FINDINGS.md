@@ -93,6 +93,26 @@ No threshold reaches zero false positives: at score 0.9999, 0.07 % of 55,497 hum
 91 % of channel AI images are above it. The production pipeline therefore auto-quarantines only above 0.9999
 (reversible, files are moved, never deleted) and sends everything between the 1 % threshold and 0.9999 to review.
 
+## Chasing the last false positives
+
+- **Measure on the real target first.** On 17,569 provably human posts of a real Telegram collection (posted before
+  08/2022, era alibi) the head flags 0.91 % — about a third of the previous 7-detector production ensemble (3.21 %),
+  which also would have auto-quarantined ten times more human images. Sorting the flags automatically (WD tags,
+  photo gate, pixel duplicates, `fp_kategorien.py`) shows half of them are photos (food, street, products), plus
+  memes and reposts: genuine false positives on art are 0.46 % of distinct images.
+- **Stricter threshold, measured cost** (`fa_kurve.py`): 1 % → 0.5 % → 0.25 % → 0.1 % false positives on the
+  calibration groups costs 97.4 → 95.6 → 93.5 → 89.1 % of channel hits. On in-domain human Telegram posts the
+  false-positive rate is already about half the calibration rate (0.50 % at the 1 % point).
+- **Test-time augmentation** (mean or median over original, flip, 90 % crop, 85 % scale; `tta_test.py`): +0.3 to
+  +0.8 points hit rate at equal false positives, nothing at 0.1 %. Small.
+- **Hard-negative weighting** (top 2 % of training humans ×3, `train3.py --hart`): no change.
+- **"Aligned" VAE reconstructions** (human images through SD1/SDXL/Flux/Qwen autoencoders as AI examples;
+  `vae_rekon.py`): the frozen features do separate original vs. reconstruction (linear probe AUC 0.97-0.99,
+  `vae_probe.py`), but the head trained on them got *worse* (channels 96.3 %, lower hit rate at every false-positive
+  level) and learned a dangerous shortcut: human images downscaled and re-upscaled (a social-media pipeline) were
+  flagged 66 % of the time — smooth resampling looks like a VAE decoder. With a resize-based pipeline this idea
+  does not transfer; it would need native-resolution input.
+
 ## Engineering notes
 
 - SigLIP's Hugging Face image processor runs in one thread and starved the GPU (48 img/s); the same resize and

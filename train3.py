@@ -219,6 +219,9 @@ def main():
                     help="Rueckgrate in RG_ALLE-Reihenfolge, z. B. clip_mid,dino_mid,siglip_mid (ab p7)")
     ap.add_argument("--seed-basis", type=int, default=0, help="Seeds basis..basis+koepfe-1 (Wiederholungslauf: 100)")
     ap.add_argument("--rating-ausgleich", action="store_true")
+    ap.add_argument("--hart", default="", help="FAKTOR:ANTEIL, z. B. 3:0.02 — oberste 2 %% der Trainings-Menschen "
+                                              "(nach --hart-ref) mit dreifachem Gewicht")
+    ap.add_argument("--hart-ref", default="p8sx")
     ap.add_argument("--aug-name", default="aug", help="aug (norm.stoere) oder aug2 (norm.stoere2, ab p9)")
     ap.add_argument("--kalib-p2", action="store_true",
                     help="Schwelle auf allen menschlichen val-Bildern nach 2022 und Nicht-Anime "
@@ -264,6 +267,19 @@ def main():
     Xva = np.concatenate([nimm(A2, va2), nimm(Az, vaz)]) if len(vaz) else nimm(A2, va2)
     yva = np.r_[p2.label[va2], pz.label[vaz]]
     qva = np.r_[p2.quelle[va2], pz.quelle[vaz]]
+    hart = None
+    if args.hart:
+        # harte Negative: die menschlichen Trainingsbilder, die ein bestehender Kopf am ehesten fuer KI haelt,
+        # bekommen mehr Gewicht (Fehlalarm-Recherche 29.09.; Rohmerkmale, vor dem Skalieren)
+        from danbooru_test import bewerte, koepfe_von
+        faktor, anteil = (float(x) for x in args.hart.split(":"))
+        ref = koepfe_von(args.hart_ref)
+        mh = np.flatnonzero(ytr == 0)
+        z = np.concatenate([bewerte(np.asarray(Xtr[mh[i:i + 50000]], np.float32), ref)
+                            for i in range(0, len(mh), 50000)])
+        hart = mh[z >= np.quantile(z, 1 - anteil)]
+        print(f"harte Negative: {len(hart)} von {len(mh)} Menschen (oberste {anteil:.1%} nach {args.hart_ref}) "
+              f"x{faktor:g}", flush=True)
     sc = Skalierer().fit(Xtr, np.arange(len(Xtr)))
     Xtr, Xva = sc.transform(Xtr, inplace=True), sc.transform(Xva, inplace=True)
     if args.quelle_gruppe:
@@ -278,6 +294,9 @@ def main():
     if args.rating_ausgleich:
         rtr = np.r_[wd2["rating"][tr2], wdz["rating"][trz]]
         wtr = rating_ausgleich(wtr, ytr, rtr)
+    if hart is not None:
+        wtr[hart] *= faktor
+        wtr = wtr / wtr.mean()
 
     # Testmengen
     te2 = np.flatnonzero(ok2 & (p2.split == "test"))
