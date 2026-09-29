@@ -230,11 +230,11 @@ def main():
         a('<p>Auf belegbar menschlicher Profi-Kunst bleibt der Kopf bei seinem 1-%-Auslegungspunkt. Die höhere Quote ab '
           '2022 ist entweder unerklärte KI-Hilfe oder wieder der „neuer Stil“-Effekt — das lässt sich hier nicht trennen. '
           'Die Produktionsdetektoren liegen hier ähnlich, verpassen aber den Großteil der KI.</p>')
-    # --- Praxis: Sorted Stuff
-    a('<h2>Praxistest: NAS „Sorted Stuff“</h2>')
+    # --- Praxis: eigene Telegram-Sammlung auf dem NAS
+    a('<h2>Praxistest: eigene Telegram-Sammlung</h2>')
     a('<p>Der Ordner, über den die alten Detektoren liefen: p8sx markiert 2,1 % bei der 1-%-Schwelle. Nach Jahr: '
       'Posts 2015–2021 0,4–0,9 % (= Fehlalarm), 2025 und 2026 je rund 7,5 % — also etwa 350–400 wahrscheinliche '
-      'KI-Bilder, die die alten Detektoren durchgelassen haben. Liste: <code>pruefung/sorted_stuff/</code>.</p>')
+      'KI-Bilder, die die alten Detektoren durchgelassen haben. Liste im lokalen Ordner <code>pruefung/</code>.</p>')
     # --- Robustheit + p9sx
     if os.path.exists(os.path.join(DATEN, "robust_test_p9sx.json")):
         R = {t: lies(f"robust_test_{t}.json") for t in (H, "p9sx")}
