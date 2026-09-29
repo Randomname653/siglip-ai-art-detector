@@ -71,3 +71,26 @@ for fa in (fa_alt, 0.005, 0.0025, 0.001):
     thr = np.nextafter(thr, 2)       # strikt darueber
     print(f"p8sx mit Schwelle fuer {fa:.2%} Fehlalarm (Score > {thr:.6f}): markiert {np.mean(s_n > thr):.1%} der "
           f"2025/26-Posts   (altes System: {quote(neu, lambda p: alt[p] != 'none'):.1%})")
+
+# Wie in der Pipeline: erkannte Fotos (Foto-Gate, Ergebnis im Cache real_photo) fallen vor dem Review heraus
+foto = dict(c.execute("SELECT path, is_real FROM real_photo WHERE path LIKE ?", (a.ordner + "%",)).fetchall())
+
+
+def pipeline(ps, flag, auto):
+    roh = [p for p in ps if flag(p)]
+    nach = [p for p in roh if not foto.get(p)]
+    return {"n": len(ps), "roh": len(roh) / len(ps), "nach_foto_gate": len(nach) / len(ps),
+            "auto": sum(1 for p in nach if auto(p)) / len(ps)}
+
+
+ergebnis = {
+    "gleiche_bilder": {
+        "alt": pipeline(hum, lambda p: alt[p] != "none", lambda p: alt[p] in ("def_ai", "high")),
+        "p8sx": pipeline(hum, lambda p: sc[p]["sig2:p8sx_v1"] >= 0.5, lambda p: sc[p]["sig2:p8sx_v1"] >= 0.9999)},
+    "neu_2025_26_markiert": {"alt": quote(neu, lambda p: alt[p] != "none"),
+                             "p8sx": quote(neu, lambda p: sc[p]["sig2:p8sx_v1"] >= 0.5)}}
+print(ergebnis)
+import json   # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lesen import DATEN   # noqa: E402
+json.dump(ergebnis, open(os.path.join(DATEN, "alt_vs_p8sx.json"), "w"), indent=1)

@@ -369,3 +369,38 @@ The leave-generator-out experiments of section 3 repeated with the p9 recipe (Si
 | **mean** | **96.4 %** | **96.0 %** | **-0.5** |
 
 No — slightly the opposite: 8 of 11 experiments lose, most for Grok and Flux. The edits blur the fine traces that also give away unknown generators. This settles it in favour of p8sx.
+
+## 14. False positives in practice
+
+A private Telegram art collection (the owner's, not used for training or calibration): 17,569 posts from before August 2022 are provably human (the post date predates usable generators), 12,594 distinct images after grouping reposts (32x32 pixel thumbnails). Scores from the production cache.
+
+**Against the previous production system** (seven detectors, majority vote with veto), on the 8,461 human posts both systems scored:
+
+|  | flagged (raw) | after the pipeline's photo filter | auto-quarantined |
+|---|---:|---:|---:|
+| previous system | 3.21 % | 3.01 % | 0.74 % |
+| **p8sx** | **0.91 %** | **0.73 %** | **0.07 %** |
+
+On posts from 2025/26 (a mix, a rough proxy for hits) the previous system flagged 2.3 %, p8sx 3.4 %.
+
+**What the 159 flagged human posts are** (116 distinct images), sorted automatically with WD tags and the photo filter (`fp_kategorien.py`), per distinct image:
+
+| kind | posts | distinct images | share of all distinct images |
+|---|---:|---:|---:|
+| photo (food, street, products) | 60 | 54 | 0.43 % |
+| drawing on a photo background | 2 | 1 | 0.01 % |
+| meme / text | 2 | 2 | 0.02 % |
+| sprite / reference sheet, comic | 1 | 1 | 0.01 % |
+| **art: anime screenshot look** | 11 | 10 | 0.08 % |
+| **art: illustration** | 83 | 48 | 0.38 % |
+
+**Genuine false positives on art: 0.46 % of distinct images.** Photos are out of scope (the production pipeline removes recognised photos before review and never auto-quarantines a photo); reposts are counted once.
+
+**Stricter threshold, measured cost** — false positives per human test group (incl. the in-domain Telegram humans before 2022) and hit rate on the Telegram AI channels (`fa_kurve.py`):
+
+| target | Telegram humans <2022 (Test) | Wallhaven <2022 (Test) | Wallhaven general <2022 (Test) | Danbooru non-anime (Test) | Danbooru anime 2026 (Test) | channel hits |
+|---|---:|---:|---:|---:|---:|---:|
+| 1.00 % | 0.50 % | 0.62 % | 0.96 % | 0.88 % | 1.15 % | 97.4 % |
+| 0.50 % | 0.20 % | 0.14 % | 0.50 % | 0.47 % | 0.52 % | 95.6 % |
+| 0.25 % | 0.07 % | 0.06 % | 0.26 % | 0.24 % | 0.25 % | 93.5 % |
+| 0.10 % | 0.02 % | 0.00 % | 0.13 % | 0.06 % | 0.10 % | 89.1 % |

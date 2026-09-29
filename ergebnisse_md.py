@@ -42,7 +42,8 @@ UEBERSETZT = [("alle sieben", "all seven"), (" allein", " alone"), ("alle zehn",
               ("Danbooru-Anime 2026", "Danbooru anime 2026"), ("danbooru_nichtanime", "Danbooru non-anime"),
               ("wallhaven_general", "Wallhaven general <2022"), ("heute", "current"), ("dicht", "dense"),
               ("halbrealistisch", "semi-realistic"), ("andere/unbekannt", "other/unknown"), ("eigen ", "own generator: "),
-              ("Danbooru Nicht-Anime (alle)", "Danbooru non-anime (all)"), ("Danbooru 2026 (Anime)", "Danbooru 2026 (anime)")]
+              ("Danbooru Nicht-Anime (alle)", "Danbooru non-anime (all)"), ("Danbooru 2026 (Anime)", "Danbooru 2026 (anime)"),
+              ("Telegram-Menschen vor 2022", "Telegram humans <2022")]
 
 
 def en(text):
@@ -298,6 +299,45 @@ def main():
                                                                                    f"**{100 * (mb - ma):+.1f}**"]])
             md += ["", "No — slightly the opposite: 8 of 11 experiments lose, most for Grok and Flux. The edits blur "
                    "the fine traces that also give away unknown generators. This settles it in favour of p8sx."]
+    # --- 14. real-world false positives (alt_vs_p8sx.json, fp_kategorien.json, fa_kurve_<H>.json)
+    fa, fk, fc = (os.path.join(DATEN, n) for n in ("alt_vs_p8sx.json", "fp_kategorien.json", f"fa_kurve_{H}.json"))
+    if all(os.path.exists(x) for x in (fa, fk, fc)):
+        av, kat, kurve = (json.load(open(x, encoding="utf-8")) for x in (fa, fk, fc))
+        md += ["", "## 14. False positives in practice", "",
+               f"A private Telegram art collection (the owner's, not used for training or calibration): "
+               f"{kat['posts']:,} posts from before August 2022 are provably human (the post date predates "
+               f"usable generators), {kat['bilder']:,} distinct images after grouping reposts (32x32 pixel "
+               "thumbnails). Scores from the production cache.", "",
+               "**Against the previous production system** (seven detectors, majority vote with veto), on the "
+               f"{av['gleiche_bilder']['alt']['n']:,} human posts both systems scored:", ""]
+        g = av["gleiche_bilder"]
+        md += tab(["", "flagged (raw)", "after the pipeline's photo filter", "auto-quarantined"],
+                  [["previous system", p(g["alt"]["roh"], 2), p(g["alt"]["nach_foto_gate"], 2), p(g["alt"]["auto"], 2)],
+                   [f"**{H}**", f"**{p(g['p8sx']['roh'], 2)}**", f"**{p(g['p8sx']['nach_foto_gate'], 2)}**",
+                    f"**{p(g['p8sx']['auto'], 2)}**"]])
+        md += ["", f"On posts from 2025/26 (a mix, a rough proxy for hits) the previous system flagged "
+               f"{p(av['neu_2025_26_markiert']['alt'])}, {H} {p(av['neu_2025_26_markiert']['p8sx'])}.", "",
+               f"**What the {kat['fp_posts']} flagged human posts are** ({kat['fp_bilder']} distinct images), sorted "
+               "automatically with WD tags and the photo filter (`fp_kategorien.py`), per distinct image:", ""]
+        reihen = [("Foto", "photo (food, street, products)"), ("Zeichnung auf Foto-Hintergrund",
+                                                               "drawing on a photo background"),
+                  ("Meme / Text", "meme / text"), ("Sheet / Comic", "sprite / reference sheet, comic"),
+                  ("Kunst: Anime-Screenshot-Look", "**art: anime screenshot look**"),
+                  ("Kunst: Illustration u. a.", "**art: illustration**")]
+        kb = kat["kategorien_bilder"]
+        md += tab(["kind", "posts", "distinct images", "share of all distinct images"],
+                  [[n, kat["kategorien_posts"].get(k, 0), kb.get(k, 0), p(kb.get(k, 0) / kat["bilder"], 2)]
+                   for k, n in reihen])
+        echt = kb.get("Kunst: Anime-Screenshot-Look", 0) + kb.get("Kunst: Illustration u. a.", 0)
+        md += ["", f"**Genuine false positives on art: {p(echt / kat['bilder'], 2)} of distinct images.** Photos are "
+               "out of scope (the production pipeline removes recognised photos before review and never "
+               "auto-quarantines a photo); reposts are counted once.", "",
+               "**Stricter threshold, measured cost** — false positives per human test group (incl. the in-domain "
+               "Telegram humans before 2022) and hit rate on the Telegram AI channels (`fa_kurve.py`):", ""]
+        gr = list(next(iter(kurve.values()))["fa"])
+        md += tab(["target"] + [en(g) for g in gr] + ["channel hits"],
+                  [[p(float(z_), 2)] + [p(v["fa"][g], 2) for g in gr] + [p(v["treffer_kanaele"])]
+                   for z_, v in kurve.items()])
     os.makedirs(os.path.join(HIER, "docs"), exist_ok=True)
     open(os.path.join(HIER, "docs", "RESULTS.md"), "w", encoding="utf-8").write(oeffentlich("\n".join(md) + "\n"))
     print("-> docs/RESULTS.md")

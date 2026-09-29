@@ -9,9 +9,13 @@ test image is from creators, artists or channels that never appeared in training
 | AI images caught, 18 real Telegram AI channels (never seen) | **97.7 %** | 47.1 % |
 | AI images caught, generators removed from training entirely | **92–99 %** | 6–73 % |
 | human art wrongly flagged (Danbooru 2026 · wallpapers · non-anime) | 1.1 % · 1.0 % · 0.9 % | — |
+| in practice: 12,594 human images of a real Telegram art collection, genuine false positives on art | **0.46 %** | 3.0 %¹ |
 | ROC AUC, mixed test set of 29,019 images | **0.998** | 0.887 |
 
-Threshold: 1 % false positives on held-out human art. Full tables in [docs/RESULTS.md](docs/RESULTS.md).
+Threshold: 1 % false positives on held-out human art. In practice about half of the raw flags on a real collection
+are photos, memes and reposts, which are out of scope; see section 14 of [docs/RESULTS.md](docs/RESULTS.md) for the
+breakdown and for what a stricter threshold costs. ¹ previous production system (seven detectors, majority vote),
+same images, after its photo filter.
 
 ## How it works
 
