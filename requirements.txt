@@ -1,0 +1,17 @@
+# Python 3.12, CUDA 12.x (tested: RTX 4090, Windows 11). Install torch from the CUDA index first:
+#   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cu128
+torch==2.11.0
+torchvision==0.26.0
+transformers==5.9.0
+huggingface_hub==1.17.0
+safetensors==0.7.0
+open_clip_torch==3.3.0          # only for heads that use CLIP (v3 ... p8x); p8sx needs SigLIP only
+timm==1.0.27
+dghs-imgutils==0.19.0           # photo filter (anime_real) and WD tagger (child-protection checks)
+onnxruntime-gpu==1.26.0
+numpy==1.26.4
+scipy==1.17.1
+scikit-learn==1.8.0
+pillow==12.2.0
+requests==2.34.2
+pyarrow==25.0.1                 # DiffusionDB metadata, Midjourney v6 sample

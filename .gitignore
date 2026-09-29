@@ -1,0 +1,15 @@
+# working data: packs, embeddings, trained heads, logs, caches (tens to hundreds of GB)
+daten/
+pruefung/
+dist/
+__pycache__/
+*.pyc
+# generated reports (rebuilt from the result files)
+bericht.html
+# local keys, never commit
+*_key.txt
+.env
+
+# machine-specific paths of the lab computer
+pfade_lokal.py
+kanaele_lokal.py
